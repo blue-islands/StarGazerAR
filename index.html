@@ -44,14 +44,14 @@
             return { x, y, z };
         }
 
-        async function initAR() {
+        function initAR() {
             // ユーザーの位置情報を取得
             navigator.geolocation.getCurrentPosition(position => {
                 const userLatitude = position.coords.latitude;
                 const userLongitude = position.coords.longitude;
 
                 // 赤緯と赤経の仮の値（実際にはAPIなどで取得）
-                const declination = 20; // 赤緯
+                const declination = 45; // 赤緯
                 const rightAscension = 90; // 赤経
 
                 // 惑星の位置を計算
@@ -60,10 +60,20 @@
                 // 惑星の位置を設定
                 const planetEl = document.querySelector('#planet');
                 planetEl.setAttribute('position', `${planetPosition.x} ${planetPosition.y} ${planetPosition.z}`);
+            }, error => {
+                console.error('Geolocation error:', error);
+            }, {
+                enableHighAccuracy: true
             });
         }
 
-        window.onload = initAR;
+        document.addEventListener('click', () => {
+            initAR();
+        });
+
+        window.onload = () => {
+            alert('After camera permission prompt, please tap the screen to activate geolocation.');
+        };
     </script>
 </body>
 
