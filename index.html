@@ -17,53 +17,50 @@
 </head>
 
 <body>
-    <a-scene embedded arjs>
-        <a-entity camera gps-camera rotation-reader></a-entity>
-        <a-entity id="planet" gps-entity-place="latitude: 0; longitude: 0" geometry="primitive: sphere; radius: 0.5"
-            material="color: blue"></a-entity>
+    <a-scene embedded arjs="sourceType: webcam;">
+        <a-camera gps-camera rotation-reader></a-camera>
+        <a-entity id="planet" geometry="primitive: sphere; radius: 0.5" material="color: blue"></a-entity>
     </a-scene>
 
     <script>
         AFRAME.registerComponent('rotation-reader', {
             tick: function () {
                 const cameraRotation = this.el.object3D.rotation;
-                const planet = document.querySelector('#planet');
-
-                const latitude = 45; // 45度の高度（角度）
-                const longitude = 90; // 東（90度）の方向
-
-                const latRad = latitude * (Math.PI / 180);
-                const lonRad = longitude * (Math.PI / 180);
-
-                const distance = 10; // 表示する距離（任意で調整可能）
-
-                const x = distance * Math.cos(latRad) * Math.cos(lonRad);
-                const y = distance * Math.sin(latRad);
-                const z = distance * Math.cos(latRad) * Math.sin(lonRad);
-
-                planet.object3D.position.set(x, y, z);
+                // console.log(`Rotation - x: ${cameraRotation.x}, y: ${cameraRotation.y}, z: ${cameraRotation.z}`);
             }
         });
 
-        async function initAR() {
-            // 惑星の位置を特定の緯度・経度に設定するための関数
-            const scene = document.querySelector('a-scene');
-
-            const planetEl = document.querySelector('#planet');
-            // 表示する位置を設定（GPSではなくローカル座標を使用）
-            const latitude = 5; // 45度の高度（角度）
-            const longitude = 270; // 東（90度）の方向
-
-            const latRad = latitude * (Math.PI / 180);
-            const lonRad = longitude * (Math.PI / 180);
-
+        // 簡略化した赤緯・赤経からの位置計算
+        function calculatePosition(declination, rightAscension, userLatitude, userLongitude) {
+            // 簡略化した計算。実際の計算には天文ライブラリが必要です。
             const distance = 10; // 表示する距離（任意で調整可能）
+            const latRad = declination * (Math.PI / 180);
+            const lonRad = rightAscension * (Math.PI / 180);
 
             const x = distance * Math.cos(latRad) * Math.cos(lonRad);
             const y = distance * Math.sin(latRad);
             const z = distance * Math.cos(latRad) * Math.sin(lonRad);
 
-            planetEl.object3D.position.set(x, y, z);
+            return { x, y, z };
+        }
+
+        async function initAR() {
+            // ユーザーの位置情報を取得
+            navigator.geolocation.getCurrentPosition(position => {
+                const userLatitude = position.coords.latitude;
+                const userLongitude = position.coords.longitude;
+
+                // 赤緯と赤経の仮の値（実際にはAPIなどで取得）
+                const declination = 20; // 赤緯
+                const rightAscension = 90; // 赤経
+
+                // 惑星の位置を計算
+                const planetPosition = calculatePosition(declination, rightAscension, userLatitude, userLongitude);
+
+                // 惑星の位置を設定
+                const planetEl = document.querySelector('#planet');
+                planetEl.setAttribute('position', `${planetPosition.x} ${planetPosition.y} ${planetPosition.z}`);
+            });
         }
 
         window.onload = initAR;
