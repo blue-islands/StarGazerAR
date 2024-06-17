@@ -1,6 +1,6 @@
 AFRAME.registerComponent("zodiac-position", {
   schema: {
-    zodiacId: { type: "number", default: 1 },
+    zodiacId: { type: "string", default: "aries" },
     lat: { type: "number", default: 0 },
     lng: { type: "number", default: 0 },
   },
@@ -25,15 +25,16 @@ AFRAME.registerComponent("zodiac-position", {
     alert("位置情報が取得できませんでした。");
   },
   getZodiacData: function () {
-    const dt = new Date();
-    const mockData = this.getMockZodiacData(this.data.lat, this.data.lng, dt);
-
-    // モックデータを利用して位置を更新
-    this.zodiacData = mockData;
+    // モックデータを使用
+    this.zodiacData = this.getMockZodiacData(
+      this.data.lat,
+      this.data.lng,
+      new Date()
+    );
     this.updateZodiacPosition();
   },
   getMockZodiacData: function (lat, lng, date) {
-    // 仮の星座データを返す
+    // 仮の星座データを返す（例として固定値を使用）
     return {
       azimuth: 180, // 仮の方位角
       altitude: 45, // 仮の高度角
@@ -44,6 +45,15 @@ AFRAME.registerComponent("zodiac-position", {
       const { azimuth, altitude } = this.zodiacData;
       this.el.setAttribute("rotation", `${altitude} ${azimuth} 0`);
       this.el.setAttribute("visible", true);
+
+      // 画像の表示設定
+      this.el.setAttribute("geometry", {
+        primitive: "plane",
+        height: 1,
+        width: 1,
+      });
+      this.el.setAttribute("material", { src: `#${this.data.zodiacId}` });
+      this.el.setAttribute("position", "0 1 -5");
     }
   },
 });
