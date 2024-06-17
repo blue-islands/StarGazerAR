@@ -3,22 +3,25 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>星座の位置を示すAR</title>
+    <link rel="stylesheet" type="text/css" href="./css/reset.css">
+    <link rel="stylesheet" type="text/css" href="./css/style.css">
+    <title>Arrow Direction Example</title>
     <script src="./js/aframe.min.js"></script>
     <script src="./js/aframe-ar.min.js"></script>
-    <script src="./js/zodiac-position_component.js"></script>
+    <script src="./js/scripts.js"></script>
 </head>
 
 <body>
-    <a-scene embedded vr-mode-ui="enabled: false" arjs="sourceType: webcam;">
+    <a-scene embedded vr-mode-ui="enabled: false" arjs="debugUIEnabled: false; maxDetectionRate: 60;">
         <a-assets>
-            <!-- 星座の画像をここに追加 -->
-            <img id="aries" src="./img/btn_take.png">
+            <img src="./img/direction.png" id="direction-arrow">
         </a-assets>
-        <a-marker preset="hiro">
-            <a-entity id="zodiac-marker" zodiac-position="zodiacId: aries; azimuth: 180; altitude: 45;"></a-entity>
+        <a-marker type="pattern" url="./marker/zodiac.patt" marker-event>
+            <a-entity id="arrow-plane" geometry="primitive: plane; width: 1; height: 1;"
+                material="src: #direction-arrow;" position="0 0 0" rotation="0 0 0">
+            </a-entity>
         </a-marker>
-        <a-entity camera></a-entity>
+        <a-entity camera compass-rotation id="camera"></a-entity>
     </a-scene>
 </body>
 
