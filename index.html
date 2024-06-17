@@ -18,13 +18,17 @@
 
 <body>
     <a-scene embedded arjs>
-        <a-marker preset="hiro">
-            <a-sphere position="0 0.5 0" radius="0.5" color="yellow"></a-sphere>
-        </a-marker>
-        <a-entity camera></a-entity>
+        <a-camera gps-camera rotation-reader></a-camera>
     </a-scene>
 
     <script>
+        AFRAME.registerComponent('rotation-reader', {
+            tick: function () {
+                const rotation = this.el.object3D.rotation;
+                console.log(`Rotation - x: ${rotation.x}, y: ${rotation.y}, z: ${rotation.z}`);
+            }
+        });
+
         async function getPlanetData() {
             const response = await fetch('https://api.le-systeme-solaire.net/rest/bodies/');
             const data = await response.json();
@@ -37,11 +41,10 @@
 
             planets.forEach(planet => {
                 const planetEl = document.createElement('a-sphere');
-                planetEl.setAttribute('position', {
-                    x: Math.random() * 5 - 2.5,
-                    y: Math.random() * 5,
-                    z: Math.random() * 5 - 2.5
-                });
+                const lat = Math.random() * 180 - 90;  // 仮の緯度
+                const lon = Math.random() * 360 - 180; // 仮の経度
+
+                planetEl.setAttribute('gps-entity-place', `latitude: ${lat}; longitude: ${lon}`);
                 planetEl.setAttribute('radius', 0.5);
                 planetEl.setAttribute('color', 'blue');
                 scene.appendChild(planetEl);
