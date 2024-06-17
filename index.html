@@ -1,28 +1,55 @@
 <!DOCTYPE html>
-<html lang="ja">
+<html lang="en">
 
 <head>
     <meta charset="UTF-8">
-    <link rel="stylesheet" type="text/css" href="./css/reset.css">
-    <link rel="stylesheet" type="text/css" href="./css/style.css">
-    <title>Arrow Direction Example</title>
-    <script src="./js/aframe.min.js"></script>
-    <script src="./js/aframe-ar.min.js"></script>
-    <script src="./js/scripts.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AR Planet Locator</title>
+    <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
+    <script src="https://cdn.rawgit.com/jeromeetienne/AR.js/master/aframe/build/aframe-ar.js"></script>
+    <style>
+        body,
+        html {
+            margin: 0;
+            overflow: hidden;
+        }
+    </style>
 </head>
 
 <body>
-    <a-scene embedded vr-mode-ui="enabled: false" arjs="debugUIEnabled: false; maxDetectionRate: 60;">
-        <a-assets>
-            <img src="./img/direction.png" id="direction-arrow">
-        </a-assets>
-        <a-marker type="pattern" url="./marker/zodiac.patt" marker-event>
-            <a-entity id="arrow-plane" geometry="primitive: plane; width: 1; height: 1;"
-                material="src: #direction-arrow;" position="0 0 0" rotation="0 0 0">
-            </a-entity>
+    <a-scene embedded arjs>
+        <a-marker preset="hiro">
+            <a-sphere position="0 0.5 0" radius="0.5" color="yellow"></a-sphere>
         </a-marker>
-        <a-entity camera compass-rotation id="camera"></a-entity>
+        <a-entity camera></a-entity>
     </a-scene>
+
+    <script>
+        async function getPlanetData() {
+            const response = await fetch('https://api.le-systeme-solaire.net/rest/bodies/');
+            const data = await response.json();
+            return data.bodies.filter(body => body.isPlanet);
+        }
+
+        async function initAR() {
+            const planets = await getPlanetData();
+            const scene = document.querySelector('a-scene');
+
+            planets.forEach(planet => {
+                const planetEl = document.createElement('a-sphere');
+                planetEl.setAttribute('position', {
+                    x: Math.random() * 5 - 2.5,
+                    y: Math.random() * 5,
+                    z: Math.random() * 5 - 2.5
+                });
+                planetEl.setAttribute('radius', 0.5);
+                planetEl.setAttribute('color', 'blue');
+                scene.appendChild(planetEl);
+            });
+        }
+
+        window.onload = initAR;
+    </script>
 </body>
 
 </html>
