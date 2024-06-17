@@ -20,18 +20,19 @@
     <a-scene embedded arjs="sourceType: webcam;">
         <a-camera gps-camera rotation-reader></a-camera>
         <a-entity id="planet" geometry="primitive: sphere; radius: 0.5" material="color: blue"></a-entity>
+        <a-entity id="arrow" geometry="primitive: cone; height: 0.5; radiusBottom: 0.1; radiusTop: 0"
+            material="color: red" position="0 1 -2"></a-entity>
     </a-scene>
 
     <script>
         AFRAME.registerComponent('rotation-reader', {
             tick: function () {
                 const cameraRotation = this.el.object3D.rotation;
-                // console.log(`Rotation - x: ${cameraRotation.x}, y: ${cameraRotation.y}, z: ${cameraRotation.z}`);
+                updateArrowDirection(cameraRotation);
             }
         });
 
-        // 簡略化した赤緯・赤経からの位置計算
-        function calculatePosition(declination, rightAscension, userLatitude, userLongitude) {
+        function calculatePosition(declination, rightAscension) {
             // 簡略化した計算。実際の計算には天文ライブラリが必要です。
             const distance = 10; // 表示する距離（任意で調整可能）
             const latRad = declination * (Math.PI / 180);
@@ -44,6 +45,8 @@
             return { x, y, z };
         }
 
+        let planetPosition;
+
         function initAR() {
             // ユーザーの位置情報を取得
             navigator.geolocation.getCurrentPosition(position => {
@@ -55,7 +58,7 @@
                 const rightAscension = 90; // 赤経
 
                 // 惑星の位置を計算
-                const planetPosition = calculatePosition(declination, rightAscension, userLatitude, userLongitude);
+                planetPosition = calculatePosition(declination, rightAscension);
 
                 // 惑星の位置を設定
                 const planetEl = document.querySelector('#planet');
@@ -67,13 +70,23 @@
             });
         }
 
+        function updateArrowDirection(cameraRotation) {
+            if (!planetPosition) return;
+
+            const arrowEl = document.querySelector('#arrow');
+            const dx = planetPosition.x;
+            const dy = planetPosition.y;
+            const dz = planetPosition.z;
+
+            const angleY = Math.atan2(dz, dx);
+            const angleX = Math.atan2(Math.sqrt(dx * dx + dz * dz), dy) - Math.PI / 2;
+
+            arrowEl.object3D.rotation.set(angleX, angleY, 0);
+        }
+
         document.addEventListener('click', () => {
             initAR();
         });
-
-        // window.onload = () => {
-        //     alert('After camera permission prompt, please tap the screen to activate geolocation.');
-        // };
     </script>
 </body>
 
