@@ -12,20 +12,6 @@
         html {
             margin: 0;
             overflow: hidden;
-            width: 100%;
-            height: 100%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-
-        #arrow {
-            position: absolute;
-            width: 50px;
-            height: 50px;
-            background: red;
-            clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
-            /* display: none; */
         }
     </style>
 </head>
@@ -33,19 +19,20 @@
 <body>
     <a-scene embedded arjs="sourceType: webcam;">
         <a-camera gps-camera rotation-reader></a-camera>
-        <a-entity id="planet" geometry="primitive: sphere; radius: 0.5" material="color: blue"></a-entity>
+        <a-entity id="planet" geometry="primitive: ring; radiusInner: 0.3; radiusOuter: 0.5" material="color: blue"
+            look-at="[gps-camera]"></a-entity>
     </a-scene>
-    <div id="arrow"></div>
 
     <script>
         AFRAME.registerComponent('rotation-reader', {
             tick: function () {
                 const cameraRotation = this.el.object3D.rotation;
-                updateArrowDirection(cameraRotation);
+                // console.log(`Rotation - x: ${cameraRotation.x}, y: ${cameraRotation.y}, z: ${cameraRotation.z}`);
             }
         });
 
-        function calculatePosition(declination, rightAscension) {
+        // 簡略化した赤緯・赤経からの位置計算
+        function calculatePosition(declination, rightAscension, userLatitude, userLongitude) {
             // 簡略化した計算。実際の計算には天文ライブラリが必要です。
             const distance = 10; // 表示する距離（任意で調整可能）
             const latRad = declination * (Math.PI / 180);
@@ -58,8 +45,6 @@
             return { x, y, z };
         }
 
-        let planetPosition;
-
         function initAR() {
             // ユーザーの位置情報を取得
             navigator.geolocation.getCurrentPosition(position => {
@@ -71,7 +56,7 @@
                 const rightAscension = 90; // 赤経
 
                 // 惑星の位置を計算
-                planetPosition = calculatePosition(declination, rightAscension);
+                const planetPosition = calculatePosition(declination, rightAscension, userLatitude, userLongitude);
 
                 // 惑星の位置を設定
                 const planetEl = document.querySelector('#planet');
@@ -83,59 +68,13 @@
             });
         }
 
-        function updateArrowDirection(cameraRotation) {
-            if (!planetPosition) return;
-
-            const arrowEl = document.querySelector('#arrow');
-            const dx = planetPosition.x;
-            const dy = planetPosition.y;
-            const dz = planetPosition.z;
-
-            const distance = Math.sqrt(dx * dx + dy * dy + dz * dz);
-            const direction = { x: dx / distance, y: dy / distance, z: dz / distance };
-
-            // カメラの向きをベクトルとして取得
-            const cameraDirection = new THREE.Vector3();
-            const cameraEl = document.querySelector('a-camera').object3D;
-            cameraEl.getWorldDirection(cameraDirection);
-
-            // 惑星の位置ベクトル
-            const planetVector = new THREE.Vector3(dx, dy, dz);
-
-            // 惑星がカメラの前方かどうかを判定
-            const dotProduct = cameraDirection.dot(planetVector.normalize());
-
-            if (dotProduct < 0.95) { // 簡易的な閾値。惑星が画面外にあるとき
-                arrowEl.style.display = 'block';
-
-                // カメラの向きに基づいて矢印の回転を計算
-                const angle = Math.atan2(direction.z, direction.x) - Math.atan2(cameraDirection.z, cameraDirection.x);
-                const screenPosition = toScreenPosition(planetVector, cameraEl);
-
-                // 矢印の位置と回転を設定
-                arrowEl.style.left = `${screenPosition.x}px`;
-                arrowEl.style.top = `${screenPosition.y}px`;
-                arrowEl.style.transform = `rotate(${angle}rad)`;
-            } else {
-                arrowEl.style.display = 'none';
-            }
-        }
-
-        function toScreenPosition(vector, camera) {
-            const widthHalf = 0.5 * window.innerWidth;
-            const heightHalf = 0.5 * window.innerHeight;
-
-            vector.project(camera);
-
-            vector.x = (vector.x * widthHalf) + widthHalf;
-            vector.y = - (vector.y * heightHalf) + heightHalf;
-
-            return { x: vector.x, y: vector.y };
-        }
-
         document.addEventListener('click', () => {
             initAR();
         });
+
+        // window.onload = () => {
+        //     alert('After camera permission prompt, please tap the screen to activate geolocation.');
+        // };
     </script>
 </body>
 
