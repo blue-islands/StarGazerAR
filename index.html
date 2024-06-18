@@ -25,7 +25,7 @@
             height: 50px;
             background: red;
             clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
-            /* display: none; */
+            display: none;
         }
     </style>
 </head>
@@ -94,25 +94,43 @@
             const distance = Math.sqrt(dx * dx + dy * dy + dz * dz);
             const direction = { x: dx / distance, y: dy / distance, z: dz / distance };
 
-            const angleY = Math.atan2(direction.z, direction.x);
-            const angleX = Math.atan2(direction.y, Math.sqrt(direction.x * direction.x + direction.z * direction.z));
+            // カメラの向きをベクトルとして取得
+            const cameraDirection = new THREE.Vector3();
+            const cameraEl = document.querySelector('a-camera').object3D;
+            cameraEl.getWorldDirection(cameraDirection);
 
-            const cameraDirection = {
-                x: Math.sin(cameraRotation.y),
-                y: Math.sin(cameraRotation.x),
-                z: Math.cos(cameraRotation.y)
-            };
+            // 惑星の位置ベクトル
+            const planetVector = new THREE.Vector3(dx, dy, dz);
 
-            const dotProduct = direction.x * cameraDirection.x + direction.y * cameraDirection.y + direction.z * cameraDirection.z;
+            // 惑星がカメラの前方かどうかを判定
+            const dotProduct = cameraDirection.dot(planetVector.normalize());
 
             if (dotProduct < 0.95) { // 簡易的な閾値。惑星が画面外にあるとき
                 arrowEl.style.display = 'block';
 
-                const arrowAngle = Math.atan2(direction.z, direction.x) - Math.atan2(cameraDirection.z, cameraDirection.x);
-                arrowEl.style.transform = `rotate(${arrowAngle}rad)`;
+                // カメラの向きに基づいて矢印の回転を計算
+                const angle = Math.atan2(direction.z, direction.x) - Math.atan2(cameraDirection.z, cameraDirection.x);
+                const screenPosition = toScreenPosition(planetVector, cameraEl);
+
+                // 矢印の位置と回転を設定
+                arrowEl.style.left = `${screenPosition.x}px`;
+                arrowEl.style.top = `${screenPosition.y}px`;
+                arrowEl.style.transform = `rotate(${angle}rad)`;
             } else {
                 arrowEl.style.display = 'none';
             }
+        }
+
+        function toScreenPosition(vector, camera) {
+            const widthHalf = 0.5 * window.innerWidth;
+            const heightHalf = 0.5 * window.innerHeight;
+
+            vector.project(camera);
+
+            vector.x = (vector.x * widthHalf) + widthHalf;
+            vector.y = - (vector.y * heightHalf) + heightHalf;
+
+            return { x: vector.x, y: vector.y };
         }
 
         document.addEventListener('click', () => {
