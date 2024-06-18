@@ -22,8 +22,9 @@
         <!--
         <a-entity id="planet" geometry="primitive: ring; radiusInner: 0.3; radiusOuter: 0.5" material="color: blue"
             look-at="[gps-camera]"></a-entity>
-        -->
         <a-entity id="planet" geometry="primitive: sphere; radius: 0.5" material="color: blue"></a-entity>
+        -->
+        <a-image id="planet" src="target.png" width="1" height="1" look-at="[gps-camera]"></a-image>
     </a-scene>
 
     <script>
@@ -55,7 +56,7 @@
                 const userLongitude = position.coords.longitude;
 
                 // 赤緯と赤経の仮の値（実際にはAPIなどで取得）
-                const declination = 45; // 赤緯
+                const declination = 15; // 赤緯
                 const rightAscension = 90; // 赤経
 
                 // 惑星の位置を計算
