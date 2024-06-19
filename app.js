@@ -33,7 +33,7 @@ function initAR() {
 
       // 赤緯と赤経の仮の値（実際にはAPIなどで取得）
       const declination = 15; // 赤緯
-      const rightAscension = 270; // 赤経
+      const rightAscension = 90; // 赤経
 
       // 惑星の位置を計算
       const planetPosition = calculatePosition(
