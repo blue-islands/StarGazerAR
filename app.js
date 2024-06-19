@@ -13,7 +13,7 @@ function calculatePosition(
   userLongitude
 ) {
   // 簡略化した計算。実際の計算には天文ライブラリが必要です。
-  const distance = 10; // 表示する距離（任意で調整可能）
+  const distance = 100; // 表示する距離（任意で調整可能）
   const latRad = declination * (Math.PI / 180);
   const lonRad = rightAscension * (Math.PI / 180);
 
